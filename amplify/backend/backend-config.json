@@ -1,0 +1,23 @@
+{
+  "api": {
+    "amplifyoidcissue": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "OPENID_CONNECT",
+            "openIDConnectConfig": {
+              "name": "custom-token",
+              "issuerUrl": "https://app.eezzee.dev/api/internal/",
+              "clientId": "",
+              "authTTL": "0",
+              "iatTTL": "0"
+            }
+          },
+          "additionalAuthenticationProviders": []
+        }
+      }
+    }
+  }
+}
