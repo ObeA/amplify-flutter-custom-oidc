@@ -1,5 +1,13 @@
-type Todo @model {
+type Todo @model @auth(rules: [
+  	{ allow: owner, ownerField: "owner", provider: oidc, identityClaim: "sub" },
+    { allow: groups, provider: oidc, groupsField: "groupsCanEdit", groupClaim: "groups", groups: [] },
+    { allow: groups, provider: oidc, groupsField: "groupsCanAccess", groupClaim: "groups", operations: [read], groups: [] }
+  ]) {
   id: ID!
   name: String!
   description: String
+
+  groupsCanAccess: [String]!
+  groupsCanEdit: [String]!
+  owner: String
 }

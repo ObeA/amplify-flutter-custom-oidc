@@ -1,5 +1,7 @@
 import 'package:amplify_api/amplify_api.dart';
+import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_flutter/amplify.dart';
+import 'package:amplify_flutter_custom_oidc/models/ModelProvider.dart';
 import 'package:flutter/material.dart';
 
 import 'amplifyconfiguration.dart';
@@ -16,6 +18,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final AmplifyAPI _apiPlugin =
+      AmplifyAPI(authProviders: const [CustomOIDCProvider()]);
+  final AmplifyDataStore _dataStorePlugin =
+      AmplifyDataStore(modelProvider: ModelProvider.instance);
+
   @override
   void initState() {
     super.initState();
@@ -23,8 +30,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _configureAmplify() async {
-    // Add the following line to add API plugin to your app
-    Amplify.addPlugin(AmplifyAPI(authProviders: const [CustomOIDCProvider()]));
+    Amplify.addPlugins([_apiPlugin, _dataStorePlugin]);
 
     try {
       await Amplify.configure(amplifyconfig);
@@ -34,30 +40,12 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  _fetchItems() async {
+  Future<void> _fetchTodos() async {
     try {
-      String graphQLDocument = '''query ListTodos {
-        listTodos {
-          items {
-            id
-            name
-            description
-          }
-          nextToken
-        }
-      }''';
-
-      var operation = Amplify.API.query(
-          request: GraphQLRequest<String>(
-        document: graphQLDocument,
-      ));
-
-      var response = await operation.response;
-      var data = response.data;
-
-      print('Query result: ' + data);
-    } on ApiException catch (e) {
-      print('Query failed: $e');
+      List<Todo> updatedTodos = await Amplify.DataStore.query(Todo.classType);
+      print("Query results: $updatedTodos");
+    } catch (e) {
+      throw Exception('An error occurred while querying Todos: $e');
     }
   }
 
@@ -66,7 +54,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
         home: Center(
       child: ElevatedButton(
-          onPressed: () => _fetchItems(), child: const Text('Fetch items')),
+          onPressed: () => _fetchTodos(), child: const Text('Fetch items')),
     ));
   }
 }
@@ -76,7 +64,6 @@ class CustomOIDCProvider extends OIDCAuthProvider {
 
   @override
   Future<String?> getLatestAuthToken() async {
-    // This is never called
     return 'some token';
   }
 }
